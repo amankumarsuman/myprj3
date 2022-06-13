@@ -6,7 +6,7 @@ export const openFormForNewRecord = (payload) => {
   };
 };
 export const formSelectedToEdit = (payload) => {
-  console.log(payload);
+ 
   return {
     type: FORM_TYPES.FORM_SELECTED_TO_EDIT,
     payload: payload,
@@ -31,8 +31,29 @@ export const addTableData = (data) => {
   };
 };
 export const editTableData = (data) => {
+ 
   return {
     type: FORM_TYPES.EDIT_TABLE_DATA,
+    payload: data,
+  };
+};
+export const deleteTableRow = (data) => {
+  return {
+    type: FORM_TYPES.DELETE_TABLE_DATA,
+    payload: data,
+  };
+};
+export const teamPlayerDetails = (data) => {
+ 
+  return {
+    type: FORM_TYPES.TEAM_PLAYER_DETAILS,
+    payload: data,
+  };
+};
+export const updateFormData = (data) => {
+ console.log("DATA",data)
+  return {
+    type: FORM_TYPES.UPDATE_FORM_DATA,
     payload: data,
   };
 };

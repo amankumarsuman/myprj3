@@ -26,7 +26,7 @@ const inititalState = {
     dataSelectedToEdit: {},
     isEditing: false,
     mainValues: { ...initialState },
-
+    teamPlayerDetails: {},
     errors: {},
   },
   //   eachForm: {
@@ -73,8 +73,9 @@ export const editPlayerFormReducer = (state = inititalState, action) =>
       }
       case FORM_TYPES.FORM_SELECTED_TO_EDIT: {
         let { uniqueId, data } = payload;
-        console.log(payload);
+
         draftState.mainForm.dataSelectedToEdit = data;
+        draftState.mainForm.mainValues = data;
         break;
       }
       case FORM_TYPES.FORM_TO_RENDER: {
@@ -99,41 +100,39 @@ export const editPlayerFormReducer = (state = inititalState, action) =>
         };
         break;
       }
+      case FORM_TYPES.UPDATE_FORM_DATA: {
+        let { uniqueId, data } = payload;
+        console.log("reducer", payload);
+
+        draftState.mainForm.dataSelectedToEdit = payload;
+        draftState.mainTable.data = draftState.mainTable.data.map((el, i) => {
+          if (el.JerseyNumber == payload.JerseyNumber) {
+            return payload;
+          }
+          return el;
+        });
+
+        break;
+      }
       case FORM_TYPES.ADD_TABLE_DATA: {
         let { uniqueId, data } = payload;
-        console.log(payload);
+
         draftState.mainTable.data = payload;
         break;
       }
-      // case FORM_TYPES.EDIT_TABLE_DATA: {
-      //   let { uniqueId, data } = payload;
-      //   console.log(payload);
+      case FORM_TYPES.TEAM_PLAYER_DETAILS: {
+        let { data } = payload;
 
-      //   draftState.mainTable.data = draftState.mainTable.data.concat(data);
-      //   break;
-      // }
+        draftState.mainForm.teamPlayerDetails = payload;
+        break;
+      }
+      case FORM_TYPES.DELETE_TABLE_DATA: {
+        let { deleteItem } = payload;
+        draftState.mainTable.data = draftState.mainTable.data.filter(
+          (item) => item.JerseyNumber !== deleteItem
+        );
+
+        break;
+      }
     }
   });
-
-// export const editPlayerFormReducer = (state = initialState, action) => {
-//   const { type, payload } = action;
-//   switch (type) {
-//     case FORM_TYPES.OPEN_FORM_FOR_NEW_DATA: {
-//       return {
-//         ...state,
-//         mainForm: {
-//           ...state.mainForm,
-//           isNew: true,
-//         },
-//       };
-//     }
-//     case FORM_TYPES.FORM_SELECTED_TO_EDIT: {
-//     return {
-//       ...state,
-//       dataSelectedToEdit:{
-
-//       }
-//     };
-//     }
-//   }
-// };

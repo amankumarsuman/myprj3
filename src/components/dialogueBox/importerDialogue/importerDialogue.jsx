@@ -9,8 +9,10 @@ import * as XLSX from "xlsx/xlsx.mjs";
 
 import "./importerStyle.css";
 import { useDispatch, useSelector } from "react-redux";
-import { addTableData } from "../../redux/form/form.action";
+import { addTableData, teamPlayerDetails } from "../../redux/form/form.action";
 import { CustomButton } from "../../customcomponent/CustomButton";
+import { csvFileValidation } from "../../customcomponent/csvFileValidation";
+import { validate } from "uuid";
 const style = {
   position: "absolute",
   top: "50%",
@@ -28,40 +30,25 @@ const style = {
 
 export default function ImporterDialogue({ open, handleClose }) {
   // const [open, setOpen] = React.useState(false);
+
   const [fileName, setFileName] = React.useState();
   const [data, setData] = React.useState();
   const [column, setColumn] = React.useState();
+  const [errorInCsvFile,setErrorInCsvFile]=React.useState(false)
   const dispatch = useDispatch();
 
   // const fileName = "";
   const inputFile = React.useRef(null);
-  // const handleOpen = () => setOpen(true);
-  // const handleClose = () => setOpen(false);
-
-  // function onChangeFile(event) {
-  //   event.stopPropagation();
-  //   event.preventDefault();
-  //   var file = event.target.files[0];
-  //   console.log(file);
-  //   setFileData({ file }); /// if you want to upload latter
-  // }
-  const onButtonClick = (e) => {
+  
+  const onButtonClick = () => {
     // `current` points to the mounted file input element
+    
     inputFile.current.click();
-    // const result = data.every(
-    //   (el) =>
-    //     el.JerseyNumber &&
-    //     el.Starter &&
-    //     el.PlayerName &&
-    //     el.Position &&
-    //     el.Height &&
-    //     el.Weight &&
-    //     el.Nationality &&
-    //     el.Appearances &&
-    //     el.MinutesPlayed
-    // );
-    // console.log(result);
+
+ 
   };
+
+ 
   // function handleChange(event) {
   //   setFileData(event.target.files[0].name);
   // }
@@ -87,6 +74,7 @@ export default function ImporterDialogue({ open, handleClose }) {
     const file = e.target.files[0];
     setFileName(e.target.files[0].name);
     const reader = new FileReader();
+    var flag=0;
     reader.onload = (event) => {
       const binaryString = event.target.result;
       const allData = XLSX.read(binaryString, { type: "binary" });
@@ -94,11 +82,11 @@ export default function ImporterDialogue({ open, handleClose }) {
       //get first sheet from csv file
       const sheetName = allData.SheetNames[0];
       const sheet = allData.Sheets[sheetName];
-      // console.log(sheet.v.trim());
+   
       //converting into array
       var fileData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-      // console.log(fileDatas);
+     
       //Extracting headers data
 
       const headers = fileData[0];
@@ -113,8 +101,40 @@ export default function ImporterDialogue({ open, handleClose }) {
 
       fileData.splice(0, 1);
       var convertedData = convertDataToJsonData(headers, fileData);
-      setData(convertedData);
+
+
+      //FILE VALIDATION
+      var rows = event.target.result.split("\n");
+      for (var i = 1; i < rows.length; i++) {
+        var cells = rows[i].split(",");
+        if(cells.length < 2){
+           flag = 1;
+           break;
+        }
+        for (var j = 0; j < cells.length; j++) {
+            if (cells[j] == "" || cells[j] == "\r") {
+               
+                setErrorInCsvFile(true)
+                flag = 1;
+                break;
+            }
+        }
+        if (flag == 1)
+            break;
+    }
+    if (flag){
+    
+      setErrorInCsvFile(true)
+    
+    }
+else{
+
+  setErrorInCsvFile(false)
+
+ setData(convertedData);
       dispatch(addTableData(convertedData));
+}
+      
     };
 
     reader.readAsBinaryString(file);
@@ -140,19 +160,15 @@ export default function ImporterDialogue({ open, handleClose }) {
   var countOfForwards = modifielders.filter(Boolean).length;
   var countOfModifielders = forwards.filter(Boolean).length;
 
-  //to check empty value of json
-  // var emptyArr = [];
-  // data.forEach(function (obj) {
-  //   emptyArr.push(obj.JerseyNumber);
-  //   // emptyArr.push(obj.Starter);
-  //   emptyArr.push(obj.PlayerName);
-  //   emptyArr.push(obj.Position);
-  //   emptyArr.push(obj.Height);
-  //   emptyArr.push(obj.Weight);
-  //   emptyArr.push(obj.Nationality);
-  //   emptyArr.push(obj.Appearances);
-  //   emptyArr.push(obj.MinutesPlayed);
-  // });
+React.useEffect(()=>{
+const payload={
+  countOfGoalKeepers:countOfGoalKeepers,
+  countOfDefenders:countOfDefenders,
+  countOfForwards:countOfForwards,
+  countOfModifielders:countOfModifielders
+}
+dispatch(teamPlayerDetails(payload))
+},[reduxStoredData])
 
   return (
     <div>
@@ -173,7 +189,51 @@ export default function ImporterDialogue({ open, handleClose }) {
           <Divider sx={{ border: "1px solid grey" }} />
           <div style={{ marginTop: "24px" }}>Roster File</div>
           <div>
-            <div
+
+          {errorInCsvFile? <div
+              style={{
+                width: "67%",
+                height: "40px",
+                border: "1px solid red",
+                borderRadius: "5px",
+                display: "flex",
+              }}
+            >
+              <div
+                style={{
+                  width: "63%",
+                  height: "39px",
+                  // textAlign: "center",
+                  //   borderR: "1px solid grey",
+                }}
+              >
+                <p style={{ marginTop: "10px", marginLeft: "20px" }}>
+                  {fileName ? fileName : "No file selected"}
+                </p>
+              </div>
+              <div  className="upload-btn-wrapper">
+                {/* {window.alert === "ERROR IN CSV FILE"} */}
+                <input
+                  type="file"
+                  id="file"
+                  accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  ref={inputFile}
+                  style={{ display: "none" }}
+                  onChange={importExcelData}
+                />
+            
+
+
+                <button className="btn" onClick={onButtonClick}>
+                  Select File
+                </button>
+
+              
+
+                {/* <button className="btn">Select file</button>
+                <input onChange={importExcelData} type="file" name="myfile" /> */}
+              </div>
+            </div>: <div
               style={{
                 width: "67%",
                 height: "40px",
@@ -194,21 +254,30 @@ export default function ImporterDialogue({ open, handleClose }) {
                   {fileName ? fileName : "No file selected"}
                 </p>
               </div>
-              <div className="upload-btn-wrapper">
+              <div  className="upload-btn-wrapper">
+                {/* {window.alert === "ERROR IN CSV FILE"} */}
                 <input
                   type="file"
                   id="file"
+                  
                   ref={inputFile}
                   style={{ display: "none" }}
                   onChange={importExcelData}
                 />
+            
+
+
                 <button className="btn" onClick={onButtonClick}>
                   Select File
                 </button>
+
+              
+
                 {/* <button className="btn">Select file</button>
                 <input onChange={importExcelData} type="file" name="myfile" /> */}
               </div>
-            </div>
+            </div>}
+           
           </div>
           <p style={{ color: "#999999" }}>File must be in .csv format</p>
 

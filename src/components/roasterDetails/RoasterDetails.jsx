@@ -1,42 +1,38 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { Box } from "@mui/system";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import EditIcon from "@mui/icons-material/Edit";
-// import image from "./football.png";
 import "./roasterDetails.css";
 import {
   Button,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
   Paper,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import CustomizedTables from "../table/Table";
 import ImporterDialogue from "../dialogueBox/importerDialogue/importerDialogue";
-import { styled } from "@mui/material/styles";
+
 import { CustomButton } from "../customcomponent/CustomButton";
-// const CustomButton = styled(Button)(({ theme }) => ({
-//   color: "white",
-//   backgroundColor: "#FEA013",
-//   "&:hover": {
-//     backgroundColor: "#BA4A0C",
-//   },
-// }));
+import { HashLink as Link } from "react-router-hash-link";
+import { useSelector } from "react-redux";
+import EmptyTable from "../table/EmptyTable";
 
 function RoasterDetails() {
   const [selected, setSelected] = React.useState("/");
+  const [editName, setEditName] = useState(false);
+
+  const { data } = useSelector((state) => state.editPlayerForm?.mainTable);
+
   const listOfDrawer = [
     {
       icon: <SportsSoccerIcon sx={{ fontSize: "2em" }} />,
       toolTip: "Home",
       content: "Home",
-      path: "/",
+      path: "/home",
     },
     {
       icon: <MenuIcon sx={{ fontSize: "2em" }} />,
@@ -53,14 +49,44 @@ function RoasterDetails() {
   ];
 
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
   const [inputChange, setInputChange] = React.useState("");
+
+  const ref = useRef("");
+
+  const [search, setSearch] = useState("Search");
+
+  //function for keyboard interaction
+  const handleKeyDown = (event) => {
+    //condition to enter button
+    if (event.key === "Enter") {
+      setInputChange(event.target.value);
+    }
+
+    //condition for esc button
+    var code = event.charCode || event.keyCode;
+    if (code.key === 27) {
+      setInputChange("");
+    }
+  };
   const handleInputChange = (e) => {
-    setInputChange(e.target.value);
+    if (e.target.value > 0) {
+      ref.current.value = search;
+      setInputChange(e.target.value);
+    } else {
+      setInputChange(e.target.value);
+    }
   };
   var inputLength = inputChange.length;
+
+  const handleEditName = () => {
+    setEditName(true);
+  };
+
   return (
     <>
       <div>
@@ -70,8 +96,6 @@ function RoasterDetails() {
             display: "flex",
             width: "100%",
             margin: "auto",
-            // border: "1px solid red",
-            // height: "100vw",
           }}
         >
           <Box
@@ -80,29 +104,27 @@ function RoasterDetails() {
               backgroundColor: "#111111",
             }}
           >
-            <List style={{ marginTop: "10px" }}>
+            <List className="list">
               {listOfDrawer.map((item, idx) => (
-                <ListItem
-                  key={idx}
-                  sx={{ padding: "8px 12px" }}
-                  // onClick={() => handleAddTab(item)}
-                >
+                <ListItem key={idx} sx={{ padding: "8px 12px" }}>
                   <Tooltip
                     sx={{ fontSize: "2em" }}
                     title={item.toolTip}
                     placement="right"
                   >
-                    <ListItemIcon
-                      sx={{
-                        color: `${
-                          selected == item?.path ? "#FEA013" : "#69563A"
-                        }`,
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
+                    <Link to={item.path}>
+                      <ListItemIcon
+                        onClick={() => setSelected(item.path)}
+                        sx={
+                          selected == item?.path
+                            ? { color: "#FEA013" }
+                            : { color: "#69563A" }
+                        }
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                    </Link>
                   </Tooltip>
-                  {/* <ListItemText>{item.toolTip}</ListItemText> */}
                 </ListItem>
               ))}
             </List>
@@ -111,43 +133,37 @@ function RoasterDetails() {
             elevation={3}
             sx={{ backgroundColor: "#383838", padding: "50px", width: "100%" }}
           >
-            <div style={{ marginLeft: "40px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
+            <div className="tableWrapper">
+              <div className="formationOverviewWrapper">
                 <span>
-                  <p style={{ color: "#FEA013" }}>Formation Overview</p>
-                  <div style={{ display: "flex" }}>
-                    <h4 style={{ color: "white", marginTop: 0 }}>My Team</h4>
-                    <EditIcon sx={{ color: "white", marginLeft: "20px" }} />
+                  <p>Formation Overview</p>
+                  <div className="myTeamDiv">
+                    <h4>{editName ? "Aman-kumar-champion" : "My Team"}</h4>
+                    {!editName ? (
+                      <EditIcon className="editIcon" onClick={handleEditName} />
+                    ) : null}
                   </div>
                 </span>
-                <span style={{ display: "flex" }}>
+                <span className="searchContainer">
                   <div className="container">
                     <form className="searchForm">
-                      {inputLength >= 1 ? (
-                        <input
-                          className="searchForm"
-                          type="search"
-                          // placeholder="Find Player..."
-                          placeholder="Search player name"
-                          onChange={handleInputChange}
-                        />
-                      ) : (
-                        <input
-                          className="searchForm"
-                          type="search"
-                          // placeholder="Find Player..."
-                          placeholder="Find Player"
-                          onChange={handleInputChange}
-                        />
-                      )}
+                      <input
+                        className="searchForm"
+                        type="search"
+                        ref={ref}
+                        onKeyDown={handleKeyDown}
+                        // placeholder="Find Player..."
+                        placeholder="Search player name"
+                        onChange={handleInputChange}
+                      />
+                      {inputLength > 0 ? (
+                        <button onClick={handleKeyDown} id="btn">
+                          Search
+                        </button>
+                      ) : null}
                     </form>
                   </div>
-                  <div style={{ marginTop: "15px" }}>
+                  <div className="btnWrapper">
                     {inputLength >= 1 ? (
                       <Button
                         sx={{
@@ -169,13 +185,6 @@ function RoasterDetails() {
                         Import Team
                       </CustomButton>
                     )}
-                    {/* <Button
-                      sx={{ backgroundColor: "#FEA013" }}
-                      variant="contained"
-                      onClick={handleOpen}
-                    >
-                      {inputLength >= 1 ? "Re-import Team" : "Import Team"}
-                    </Button> */}
                   </div>
                 </span>
               </div>
@@ -184,13 +193,25 @@ function RoasterDetails() {
                 elevation={3}
                 sx={{
                   backgroundColor: "#494949",
-                  // padding: "20px",
+
                   height: "700px",
                 }}
               >
-                <div style={{ display: "flex" }}>
-                  <CustomizedTables inputChange={inputChange} />
-                </div>
+                {data.length > 0 ? (
+                  <div style={{ display: "flex" }}>
+                    <CustomizedTables inputChange={inputChange} />
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <EmptyTable />
+                    </div>
+                    <div className="emptyTableMessage">
+                      <p>You do not have any player on the roster</p>
+                      <h4 onClick={handleOpen}>Import Team</h4>
+                    </div>
+                  </>
+                )}
               </Paper>
             </div>
           </Paper>

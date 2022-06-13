@@ -7,11 +7,11 @@ import Modal from "@mui/material/Modal";
 const style = {
   position: "absolute",
   top: "50%",
-  left: "50%",
+  left: "40%",
   transform: "translate(-50%, -50%)",
   width: 400,
   bgcolor: "#2D2D2D",
-  border: "2px solid #000",
+  border: "1px solid #2D2D2D",
   boxShadow: 24,
   color: "white",
   borderRadius: "10px",
@@ -25,26 +25,31 @@ export default function PlayerDataNotFound() {
 
   return (
     <div>
-      <Button onClick={handleOpen}>Open modal</Button>
-      <Modal
+      {/* <Button onClick={handleOpen}>Open modal</Button> */}
+      {/* <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <div style={{ display: "flex" }}>
-            <img width="10%" src="./alert.png" alt="alert" />
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              No player data found
-            </Typography>
-          </div>
+      > */}
+      <Box sx={style}>
+        <div
+          style={{
+            display: "flex",
+            textAlign: "center",
+          }}
+        >
+          <img width="10%" src="./alert.png" alt="alert" />
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+            No player data found
+          </Typography>
+        </div>
 
-          <p style={{ fontSize: "15px", color: "grey" }}>
-            Please importer your roster first
-          </p>
-        </Box>
-      </Modal>
+        <p style={{ fontSize: "15px", color: "grey" }}>
+          Please importer your roster first
+        </p>
+      </Box>
+      {/* </Modal> */}
     </div>
   );
 }
